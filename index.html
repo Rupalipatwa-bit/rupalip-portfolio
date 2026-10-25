@@ -33,6 +33,7 @@
     --glass-line:rgba(255,250,243,0.72);
     --shadow:0 26px 60px -30px rgba(42,33,28,0.42);
     --shadow-lift:0 40px 90px -40px rgba(100,32,46,0.5);
+    --nav-h:72px;
     --disp:'Schibsted Grotesk',system-ui,sans-serif;
     --sans:'Hanken Grotesk',system-ui,sans-serif;
     --mono:'JetBrains Mono',ui-monospace,monospace;
@@ -42,7 +43,9 @@
   body{
     font-family:var(--sans);background:var(--bg);color:var(--ink);
     line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+    display:flex;flex-direction:column;min-height:100vh;
   }
+  body.sheet-lock{overflow:hidden}
   /* drifting aurora */
   body::before{
     content:"";position:fixed;inset:-20%;z-index:0;pointer-events:none;
@@ -71,16 +74,18 @@
   .wrap{max-width:1100px;margin:0 auto;padding:0 32px;position:relative;z-index:1}
 
   /* NAV */
-  nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;
-    align-items:center;padding:20px 32px;transition:all .4s ease}
-  nav.stuck{background:rgba(245,239,230,0.85);backdrop-filter:blur(10px);
-    box-shadow:0 1px 0 var(--line-soft);padding:14px 32px}
-  .brand{display:flex;align-items:baseline;gap:4px;line-height:1;position:relative}
+  nav{position:fixed;top:0;left:0;right:0;z-index:130;display:flex;flex-direction:column;align-items:stretch;
+    gap:8px;padding:14px 28px 12px;
+    background:rgba(245,239,230,0.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    box-shadow:0 1px 0 var(--line-soft)}
+  nav.stuck{background:rgba(245,239,230,0.96)}
+  .nav-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:baseline;gap:4px;line-height:1;position:relative;text-decoration:none;flex-shrink:0}
   .bn-star{position:absolute;left:-12px;top:-7px;font-size:12px;color:var(--accent);opacity:.85}
   .bn-first{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;letter-spacing:.06em;
     text-transform:uppercase;color:var(--ink)}
   .bn-last{font-family:'Great Vibes',cursive;font-weight:400;font-size:27px;color:var(--accent);margin-left:1px}
-  .nav-links{display:flex;gap:30px;align-items:center}
+  .nav-links{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;width:100%}
   .nav-links a{color:var(--ink-soft);text-decoration:none;font-size:14px;font-weight:600;
     position:relative;transition:color .25s;font-family:var(--mono)}
   .nav-links a:not(.nav-cta){font-size:13px;letter-spacing:-.01em}
@@ -88,14 +93,47 @@
     background:var(--accent);transition:width .3s ease}
   .nav-links a:hover{color:var(--ink)}
   .nav-links a:hover::after{width:100%}
-  .nav-cta{border:1px solid var(--ink);border-radius:8px;padding:9px 16px !important;
-    color:var(--ink) !important;font-family:var(--sans) !important;font-size:14px !important}
+  .nav-cta{border:1px solid var(--ink);border-radius:8px;padding:9px 16px;margin-left:auto;
+    color:var(--ink);font-family:var(--sans);font-size:14px;font-weight:600;text-decoration:none;flex-shrink:0}
   .nav-cta::after{display:none}
   .nav-cta:hover{background:var(--ink);color:#fff !important}
-  @media(max-width:720px){.nav-links a:not(.nav-cta){display:none}}
+  .nav-links a.active{color:var(--ink)}
+  .nav-links a.active::after{width:100%}
+  @media(max-width:820px){
+    nav{padding:12px 16px 10px}
+    .nav-links{gap:6px 14px}
+    .nav-links a{font-size:12.5px}
+    .nav-cta{padding:7px 12px}
+  }
+  @media(min-width:1180px){
+    nav{flex-direction:row;align-items:center;justify-content:space-between;gap:24px;padding:16px 32px}
+    .nav-top{flex:0 0 auto}
+    .nav-links{width:auto;flex:1;justify-content:flex-end;flex-wrap:nowrap;gap:16px}
+  }
+
+  /* TOPIC SHEETS — each header topic rises as its own page */
+  .sheet{position:fixed;inset:0;z-index:70;overflow-y:auto;background:var(--bg);
+    transform:translateY(104%);visibility:hidden;pointer-events:none;
+    padding:calc(var(--nav-h) + 16px) 0 56px;
+    transition:transform .62s cubic-bezier(.22,.8,.24,1),visibility 0s linear .62s}
+  .sheet.open{transform:translateY(0);visibility:visible;pointer-events:auto;z-index:80;
+    transition:transform .62s cubic-bezier(.22,.8,.24,1),visibility 0s}
+  .sheet.leaving{z-index:70}
+  .sheet::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(620px 520px at 82% 6%, rgba(160,58,76,0.16), transparent 62%),
+      radial-gradient(560px 480px at 12% 18%, rgba(140,47,63,0.12), transparent 60%),
+      radial-gradient(640px 560px at 70% 88%, rgba(190,85,102,0.10), transparent 62%)}
+  .sheet-top,.sheet>section{position:relative;z-index:1}
+  .sheet-top{display:flex;align-items:center;padding:0 32px 6px}
+  .sheet-close{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;
+    font-weight:600;color:var(--accent-deep);background:var(--bg-2);border:1px solid var(--line);
+    border-radius:8px;padding:9px 15px;cursor:pointer;transition:border-color .2s,color .2s,transform .2s}
+  .sheet-close:hover{border-color:var(--ink);color:var(--ink);transform:translateX(-2px)}
+  @media(max-width:720px){.sheet-top{padding:0 20px 6px}}
 
   /* HERO */
-  header{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px}
+  header{flex:1;display:flex;align-items:center;padding:calc(var(--nav-h) + 28px) 0 36px}
   .hero-wrap{display:grid;grid-template-columns:minmax(0,1.55fr) 0.9fr;gap:48px;align-items:center}
   .hero-text{min-width:0}
   .hero-portrait{justify-self:center}
@@ -109,9 +147,15 @@
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
   @keyframes spin{to{transform:rotate(360deg)}}
   @media(max-width:820px){
-    .hero-wrap{grid-template-columns:1fr;gap:34px}
+    header{padding:calc(var(--nav-h) + 16px) 0 20px}
+    .hero-wrap{grid-template-columns:1fr;gap:18px}
     .hero-portrait{order:-1;justify-self:start}
-    .hero-portrait img{max-width:190px;border-width:4px}
+    .hero-portrait img{max-width:148px;border-width:4px}
+    .avail{margin-bottom:16px}
+    h1{margin-bottom:14px;font-size:clamp(40px,11vw,56px)}
+    .lede{font-size:16.5px;line-height:1.45}
+    .hero-row{margin-top:22px}
+    .hero-hook{margin-top:22px;padding-top:16px;gap:16px}
   }
   .avail{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);
     font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--accent-deep);
@@ -359,9 +403,11 @@
     border:1px solid var(--line);border-radius:8px;padding:10px 18px;transition:all .25s;background:var(--bg-2)}
   .socials a:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-2px)}
 
-  footer{border-top:1px solid var(--line);padding:34px 0;text-align:center;color:var(--muted);
+  footer{border-top:1px solid var(--line);padding:22px 0 28px;text-align:center;color:var(--muted);
     font-size:13px;position:relative;z-index:1;font-family:var(--mono)}
   footer b{color:var(--accent-deep);font-weight:600}
+  footer a{color:var(--ink-soft);text-decoration:none;font-weight:600}
+  footer a:hover{color:var(--accent-deep)}
 
   .reveal{opacity:0;transform:translateY(30px);filter:blur(6px);
     transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1),filter .9s ease}
@@ -369,7 +415,7 @@
   .d1{transition-delay:.09s}.d2{transition-delay:.18s}.d3{transition-delay:.27s}
 
   @media (prefers-reduced-motion: reduce){
-    *,body::before,.hero-portrait,.hero-portrait::before,h1 em,.btn-primary,.rings,.bg-art{animation:none !important}
+    *,body::before,.hero-portrait,.hero-portrait::before,h1 em,.btn-primary,.rings,.bg-art,.sheet{animation:none !important;transition:none !important}
     .reveal{transition-duration:.3s;filter:none}
     .split .word{opacity:1 !important;transform:none !important;transition:none !important}
   }
@@ -621,26 +667,29 @@
 </div>
 
 <nav id="nav">
-  <div class="brand"><span class="bn-star">✦</span><span class="bn-first">Rupali</span><span class="bn-last">Patwa</span></div>
-  <div class="nav-links">
-    <a href="#about">about</a>
-    <a href="#path">path</a>
-    <a href="#ai">ask_ai</a>
-    <a href="#building">building</a>
-    <a href="#cases">case_studies</a>
-    <a href="#stack">stack</a>
-    <a href="#writing">writing</a>
-    <a href="#find">find_me</a>
+  <div class="nav-top">
+    <a class="brand" href="#home" id="brandHome"><span class="bn-star">✦</span><span class="bn-first">Rupali</span><span class="bn-last">Patwa</span></a>
     <a href="https://calendly.com/rp4571-nyu/30min" target="_blank" rel="noopener" class="nav-cta">Book a call</a>
+  </div>
+  <div class="nav-links" id="navLinks">
+    <a href="#about" data-open="about">about</a>
+    <a href="#path" data-open="path">path</a>
+    <a href="#ai" data-open="ai">ask_ai</a>
+    <a href="#building" data-open="building">building</a>
+    <a href="#cases" data-open="cases">case_studies</a>
+    <a href="#stack" data-open="stack">stack</a>
+    <a href="#toolkit" data-open="toolkit">toolkit</a>
+    <a href="#writing" data-open="writing">writing</a>
+    <a href="#find" data-open="find">find_me</a>
   </div>
 </nav>
 
-<header>
+<header id="home">
   <div class="wrap hero-wrap">
     <div class="hero-text">
-      <div class="avail reveal in"><span class="dot"></span>Senior talent partner · open to recruiting, consulting &amp; people analytics roles</div>
+      <div class="avail reveal in"><span class="dot"></span>Talent partner for tech and AI companies · open to full time recruiting roles from May 2027</div>
       <h1 class="reveal in d1">I build the teams behind the <em>technology.</em></h1>
-      <p class="lede reveal in d2">I'm a talent partner who has built AI and engineering teams at both ends of the curve, 0 → 1 at an early startup and hypergrowth at big tech. I pair recruiting with workforce analytics, and I care most about the hire that still looks right a year later, the part speed usually costs you.</p>
+      <p class="lede reveal in d2">I’m a talent partner who builds AI and engineering teams, from functions that didn’t exist yet to teams scaling through hypergrowth. I pair recruiting with workforce analytics, so decisions rest on evidence rather than instinct, and I care most about the hire that still looks right a year later, long after speed stops mattering.</p>
       <div class="hero-row reveal in d3">
         <a href="https://calendly.com/rp4571-nyu/30min" target="_blank" rel="noopener" class="btn btn-primary">Book a 30 min call <span class="arr">→</span></a>
         <a href="resume.pdf" class="btn btn-ghost" id="resumeBtn" target="_blank" rel="noopener">Download résumé</a>
@@ -652,7 +701,7 @@
         </div>
         <div class="hk">
           <span class="hk-label">the impact</span>
-          <p>A <b>Gen AI org built from zero</b>, AI/ML hires at Meta, and hiring time cut nearly in half.</p>
+          <p>Turned hiring plans into <b>working teams shipping AI products used by millions</b>, and built a network of senior AI talent along the way.</p>
         </div>
       </div>
     </div>
@@ -662,7 +711,9 @@
   </div>
 </header>
 
-<section id="about">
+<div class="sheet" id="sheet-about" role="dialog" aria-modal="true" aria-hidden="true" aria-label="About">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="about">
   <div class="wrap">
     <div class="eyebrow reveal">about</div>
     <div class="about-grid">
@@ -696,8 +747,11 @@
     </div>
   </div>
 </section>
+</div>
 
-<section id="path">
+<div class="sheet" id="sheet-path" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Path">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="path">
   <div class="wrap">
     <div class="eyebrow reveal">the path</div>
     <h2 class="reveal d1">How I got here</h2>
@@ -706,25 +760,25 @@
         <div class="mh-year">2026</div>
         <div class="mh-node"><span class="mh-logo"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUFBgwICQcKDgwPDg4MDQ0PERYTDxAVEQ0NExoTFRcYGRkZDxIbHRsYHRYYGRj/2wBDAQQEBAYFBgsGBgsYEA0QGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBj/wAARCAB7ANwDASIAAhEBAxEB/8QAHQAAAgMBAAMBAAAAAAAAAAAAAAEHCAkCBAUGA//EAEwQAAECBAMEBAcOAgcJAAAAAAEAAgMEBREGByEIEjFBExhRYSIyNkJ0lbMUFTVSVldxdYGRodLT8EOxCRYXMzhkciMkVXOSoqOyw//EABsBAQADAAMBAAAAAAAAAAAAAAAEBQYBAgMH/8QAOBEAAgEDAQQGCAUEAwAAAAAAAAECAwQRBQYhMXESE0FRgZEUIjIzNGGxwRU1Q1OhQmLR8HKS8f/aAAwDAQACEQMRAD8Av0ndJOyASEIQAhCEAI5oRzQFdNrDNPG2V+G8MTeC6pBkIs9NxoUw6JLQ4++1sMOaLPBtqTwVXetxnxyxbJ+q5f8AKpx28vI3Bf1hM+xaqO3K+hbO6fbVrKM6lNN5fFfM1mkWlGrbKVSCbyycetxnz8rZP1XL/lR1uM+flbJ+q5f8qg+57UwTZXf4TZ/tR8i0VhbP9NeRN/W4z5+Vsn6rl/yo63GfPytk/Vcv+VQeSb8V1ChxY8dkGEx8SI9wY1jBcuJNgABxJPJHpVkll0o+Q9Atl+mvIm7rcZ8/K2T9Vy/5UdbjPn5WyfquX/KoRc17IjmODmlpIIIsQRoQubm/FFpVk1nqo+SHoFt+2vInDrcZ8/K2T9Vy/wCVHW4z5+Vsn6rl/wAqhAk2Sue1Pwmz/aj5HL0+2X6a8ieJHaxz0mavJwImK5N0OJMQ2OHvXL6gvAPm9hWkjfEAWN9I+H5D0qD7Rq2QaDZY3am0o286aoxUc54eBm9coU6U4dXFLd2HV9LJItpdCyhRAhCEAJ3STsgEdUIQgHoi4STsO1ABsgW5pG10IB6I0SQgHojmkLXRpdAVD28vI3Bf1hM+xaqOq8W3l5G4L+sJn2LVR0r6dsx+Xx5v6m00T4Vc2CYCS9zhXDVXxjjKmYWoMDpqjUZhsvAaR4IJ4ud2NaAXE9gKvalSNOLlJ7kWspqEXKXBH4TNCqcnQKdWpmUiQ5GoujMlY54RTCcGxAO8Fw+9WM2TckJnFmL4GZFfkyMP0mP0kjDiNt7tm2HQjthwzqTzcANbOUt4/wAp8M1x2WGzvSpdxhUpjqxUagzwYkCSYDDiH/mTEV9h2WJ5BS9jbF1JylwPSaPhuhCdqU29lLw/h6TIYZmKG+CwfEhMHhPefFaCeJWG1DaGpXoKjRWJSz/1zu80Zi71adWn1dNYb+hRPNvK+fibZdXwDhmUD4tWqbI0nDaPBhsmGiK5x7GMvEJPINUWYqw7PYRxtVsMVMATlMm4kpFLdA4sdbeHcRYjuK0xy7ywjULEU/mFjmoQK1juqQRCmp6DD6OXkoI4S8q3i2GOBcfCda57FUzNXA0LM7aPzIxhQYrImEqHJum6jV5dwMF8xBlBeDDfq1zy9rQbXsA4m2l5ela8pTVGb9SMUs97z/qwe9jqmZdXN+qljPzK0oXVri542uVythk0K37zzaR8PyHpUH2jVsg0+D9qxvpGuIJD0qD7Rq2Qba1+9YXbD3lLx+xl9ofbhyZ1pZGiWlroWMM6PRGiSEAc07hJMWtxQBojRI2QgDXuT3j3IumgOSSTyRr3Jk8kAoBa9yNe5O6LoBAkHknck8kXR5yAqFt5eRuC/T5n2LVR1Xi28vI3Bf1hM+xaqOr6dsx+Xx5v6m00T4Vc2CsDsbPpzNqKUE8WCM+lzbZTe5xbMJA79wP+y6r8vPotaqeHsQyVco07GkqjJRRHlpmCbOhvHAj+RB0IJB4q01C2dzbTox4tE67outRlTXFo0qpcaHS9trEUCpkMjVvDElEpb36CIyXjRRHhtPMtMRjiOw3Xqpeo0yNtWZgYyxROQpemYEocpJy8SN4ks2YhumJiMB2ua1rbjWwtzUDQtouHm1TaNQMRYOr0LG0jH6ei1zCG5EmIUwG3L2QIhF2uaDvw94tc3TTS3dZmM2cT4vm4teyjxe2nV402BiUyVKe0TsKSjl4fDhE3Z0sPdY6GXaW0JGi+fvTatOTjW9V9HHFfLeu/K/kynoc6cmqm54xx+ngTtRMMYhz2kW4nzEmKlR8FzYEWlYPlozpd8zAOrY1QiNIc8vFnCCCGtBF7leh2pcQ4cy02ZnYCw7JydMdWrSEpIyUJsJsKXa4OjODRwFgG35l/0r1uYG2RIYRizFDp2WuIZWswmDdl681kk2EHC7S5jS5xFtbC30hUyx3j/E+ZGL4+JcWVAzc7FAYxrW7kKBDBuIcNnmtFzpxJuSSTdS9J0a4r1oVa0ejTW9Lv7v8A0kWGn1atRVKixBcEfMudvOLgLXSQhfQTVnm0jygkPSoPtGrZBpNracVjfSPh+Q9Kg+0atkG+L9qwm2HvKXj9jL7Q+3Dkzq5tbRLXuTHBF1jDOi17ka9yd0XQC17kw4gckua6QCJJPJLXuXV0roBJ3CSEAHihCEAIQhAMcUeckjmgKh7eXkbgv6wmfYtVHVeLby8jcF/WEz7Fqo6vp2zH5fHm/qbTRPhVzYIQhaAtj3WE8U1jBWMJDFWH5iHL1SnvdElosSE2K1rixzCS12h0cQtAKBK51VvKKnY+dnhJQJebpLKo6B/VWXd0YMLpCze6TlqL2Wcw8YX4XWgWE8TGX/ow31dryHy+G5uSDieDg6JAH8wsntPS91OMVlvG9J7vEotapr1JJLLeCjmM8a1/MHFkbFWJ5qHM1OZZDbEiwoLYLSGNDW+C3QaWXz6ZFrNGoAsktRShGnFQisJF3CChFRjwQIQheh2PNpHw/IelQfaNWyDT4P2rG+kfD8h6VB9o1bHt4H6VhNsfeUvH7GX2h9uHJnfmpI1shYwzoIQhACYOiSEAzxSQhACd0kIAQhCAEIQgGOKPOST5oCoW3l5G4L+sJn2LVR1Xi28vI3Bf1hM+xaqOr6dsx+Xx5v6m00T4Vc2CEIWgLYFaOnYk6L+i1qlObEs51fNM48A+YZHP4XVXF9KzGlXZlPEy9ayB71RKs2sF9j0vSiF0Qbe9t22vC91XajaO56tL+mSfkRLy3dboY7GmfNjiUHggcUHgrAm9gkIQuTqebSPh+Q9Kg+0atkG+L9qxvpHw/IelQfaNWx7ef0rCbY+8peP2MvtD7cOTO/NSTtpdJYwzoIQhACd0kIAQhCAE7jsRp+wjT9hAJCeluP4IFuZ/BAJCen7CNP2EAhxRzT0/YRz0P4ICGNoHJGczrpNCkZXEcCi+9kxFjudFlTH6XfYG20c21rXUEdQqq/OdJ+qn/qqwOemeMvknTqLOTGHJisiqRokEMgzLYHRljA65Jab3ulknn5hzOanz4lJOJSKrIOvGpkeM2K/oj4sZrgBvNJuDpoRY8Re8tbzUbW1VSjlUs9yZZ0a95Ro9Km8QK/8AUKqvznSfqp/6qOoVVfnOk/VT/wBVXLrtUbRcK1GsmCY4kpWLNGE126XhjC6wPK9rXUD5P7U8pm5mVAwhL4Lm6S+LJxZv3TFnmRgNwNO7uho473Fe9LWNVq05VYSzGPF4W7+DvDUL6cZTjLcuO5EWdQqrfOdJeqn/AKqfULq3znSfqp/6qkPMPa2dlrmJUsIV3LKpOmJR14cZlRhhkzCOrIrLs4OH3EEHgp9wjiik41wTTcU0KYEen1GA2PBfzF+LT2OBBaR2grmrq2q0oRqTliMuDxHf/BzUvr+nFTnLCfyRT/qFVX5zZP1U/wDVR1C6t850n6qf+qrA5258UDJimU107T41WqNQiO6Kny8ZsJwhN8aK5zgQGgkN4ak9xXrcus+5nMDLLFGOmYFnqXSaJLxYkOJHnGPM7Ehw3PfDh2aLBoDQXG4u61tCuVqurOkq/S9VvCeI/wCDsr6/dNVOl6r+SIP6hVV+c6T9VP8A1U+oVVfnNk/VT/1VKmTe1JKZuZmswhAwZN0pzpSLNmZjTzIwG5u+CGhg473byVhyAGk2XS51nVLafV1pYfJf4OtbUL6jLoVJYfJFK5TYSq8rUJeZ/tMk3CFGZFI96nXO64Ot/e9yuoBYWVZMd7XsjgnNqqYHiYEnZyJT51smZtlQYxsQu3fC3SwkePwvyVm2kbvFQdSq3tXoTvO1erw4eBFvJ3E+jK47Vu5HV9LJJ6W4/gjT9hVZCEhPT9hGn7CASdwjnx/BGn7CARQnp+wjT9hAJCdkWQCQmRogBAJCdkWQCHFB4p2QeKMFP9vPyWwQf87NeyYqmYLxPijLfGNHxtQxElY7C98u+KD0U5DDtyJDd8ZhILXDkbHiArZ7eemFcEenTXsmL1uVGUVMzf2D5WkRSyXq8rUp6PS54j+4i9J4rufRusA4fQeLQtzp13TttMp9cswlJp8nk01ncxo2MOsWYttMn2n5iUPM/ZqrGK6DEIgx6PNsjS7yC+VjNgO34T+9p58wQRoVTXYxB60cmD/wia/9Ya+VwHj7FWSuLcS4YrEnMQZadl49KrNLcdYcTo3NZFZfTfaSLHg5hPdb6zYzbubUcq3jakzY/wC2GuVp3oVpdKLzCSTi/kFaK3oV+j7LWVyLM7VOTTsxstxiKhSfSYkoUN0WC1g8Kbl/GiQe86b7e8EecoF2Ts9JHAr6pgvF9QEvQI0OJUZKYicJeKxu9EhjuiNaSB8dtuLlf212cbLNvavy1puX+dbZ2idHCkMQQn1Bsm0W9zRg+0UN5bpcQ4Dldw4WVZodWN5Tem1+D3xfc0Q9NnG4g7Orw4o9JPTOLtpraba2Wa+DFqcbo4AcN5lMkYfnH/S27j8Z7recr74hwrRsFbLNewth+V9z06n4dm4EFnEkCA+7nHm5xJcTzJJUZ7G2XNKw/k1Dx4d2PV8R7znRS2xgS8OI5rILfpLS8nmSPihTZmXBiRsl8XQYLS576NONa3tPQPXhql5Gpcwt6W6nTaS8HxPO+uVOtGlDdCDwih+xd/iehfVE1/8ANaLnxSs4djWbl5bagp7Y0VrHTVLm4UIHzn7rHW+5rj9i0dc4Bumv0LvtVuvc/wBqO2t/E+CMvc+r9cLFfH4bhfyhLUNo8FZc50x4VU2v8UOkXiOH19kFpYb7z2uhsI/6gQtRx4tu9eu0KxQtf+P2Rzqvu6K/tHySTHBFllymEhOyLIBIRzTsgEhOyLIBa9yNe5dWHYEWHYEBzr3I17kyBbggAW4IBa9yNe5dWHYEWHYEBzr3IsV1YdgXJ4oCoW3gx78L4IDGPdadmvFaT/CZ2L73Y3a4bLUi17HNPvjOaOBH8XvU+RYcOIP9pDY//UAU4bWtZZrWt+gWVjPUXKyjZ9Hg85/3mS5XfStlbY4PJWTasyH/AK7YeiY/wrJE4jpsH/epeE3wqjLNHADnFYLlvMi7fiqA9jaHEZtRypdDiAGlTmpYQODO0LRl4BAuF+TIUJvhNhMae0NAUihrdSnaTs5LKe5PuPanqU40JW7WU/4P2INlRjbtBOYeDrA397Y/AE/xmq9HJfhFgQIjgYkCE8gWBewG33qHp176FXjXxnGd3Mj2lw7aqqmM4Il2W/8ACVgwf5aKf/PEUuR4UOPLRIMaG2JDe0tex3BzToQe6ycNjIbGthsaxo0AaLAL9CB2KLVq9dUlU4ZbZ41J9Obn3mZua+TmOsjszXV2gS1RFFgTXumk1uRa53ucXu1kQgHce2+7ro4DncheVObYOc0/h91IZXKPLxXs6L3bKSLGzPYS07xAd3hv0WWkcRrSCC0EHQgjQhevZQ6JBmvdMKi06HH49K2VYHffa6v46/TqRSuqKnKPayzjq8JRSr0lJrtKIbNWQeJcVZj07HuK6TNSWHqbHE9DdPw3NiVGYad5m613hFgfZ7nka2sL3JWgY4LloF12QLDRVd/qNS/qdZPd2JdyIV1dyup9OW7HYLXuRr3JgC3BOw7AoJGOde5GvcurDsCLDsCA517ka9yLC/BdWHYEBzr3I17l1YdgRYdgQH//2Q==" alt="NYU"></span></div>
         <div class="mh-loc">New York</div>
-        <div class="mh-desc">Master's in Human Capital Analytics. Open for 2027.</div>
+        <div class="mh-desc">Master's in Human Capital Analytics, President of NYU SHRM. Open from May 2027.</div>
       </div>
       <div class="mh reveal">
         <div class="mh-year">2025</div>
         <div class="mh-node"><span class="mh-logo"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUFBgwICQcKDgwPDg4MDQ0PERYTDxAVEQ0NExoTFRcYGRkZDxIbHRsYHRYYGRj/2wBDAQQEBAYFBgsGBgsYEA0QGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBj/wAARCAB7ANwDASIAAhEBAxEB/8QAHQAAAgICAwEAAAAAAAAAAAAAAAEHCAIJBAUGA//EAEAQAAEDAgQEBAMEBwcFAQAAAAEAAgMEEQUGByESMUFhCBNRcSKBkRQyQqEVFiNSYrHwFyQzQ4KSwRhyk8Lh0v/EABoBAQEBAQEBAQAAAAAAAAAAAAAHBgUBBAj/xAA1EQABAgQEAgkCBgMBAAAAAAABAAIDBAURBiExUUFhEhMUMnGBscHRIpEVI1Kh4fAHQvFi/9oADAMBAAIRAxEAPwC/Sd0k7IiSEIREIQhEQjrdCDsL3CIg7oSvfkUjxDoV5dFkhIEHqn0XqJ3SRZCIgbJ3SSds290RNCx4tkcXK68uiyTvsi3cJL1E77WSRba6ERCEIREJ3STsiJHdCEIieyLhJOw9URBsgW6pG10IieyRshYuIDblETJHVQpqh4jssZFqpcGwaIY7jUZLXxxP4YIHej39T/C2/ey8r4gtdZsFlnyNk2r4MQtwV+IRH4qcH/LYej7cz05c1UeQue9z3OJJNySbknqT3VEwvgztbBNzwIYdG6X5nksXXMTdQ4wJU/UNTt4KSsza+6oZnqHOkzJLhcBPw0+GDyAB6Fw+I/MrysWoOeoajz484462T95ta+/8150MPE1tiS42AAJJ9gFyZcKxOnhE1RhtbDEdw+SB4B+dlTIVOkZdohMhtA2sP+rEPmpqM7pl7jzzUt5T8TGpOXpo2YnWwY/RgjiirWWkt2kbY39wVaXTPWbKepVJ5VBOaHFWNvLhlS4eY3u08nt7ha9OdrbjoQuTR11bh1bDW0FRLTVMDw+KaJ3C9jh1BHJcGsYLkp5pMFohv4EaeY0XVp2JJqUcA89Jux+VtJDgW80nGw9FAehGu7c7xsypmiRkeYI2Ew1FuFta0c9ujwNyOvMKYc2ZpwjKGVanHcaqBFTQN5Dd0jujGjq4qOztLmZOZ7JEYenwA47W8VSJWowJiB2hjvp48vFZ5lzRgmUsBkxfHsQjpKaPbidu57ujWt5ucfQKs+dfEvmHEqh9Lk2nbhNINhUztbJPJ3APws/MqMc+59xvUDM78VxSZzYQSKWjB/Z07L7ADq61rnquuy5lXH82403C8vYbNW1R3cGCzYx+89x2aPf5Kn0XB0nIQe1VMguAuQe6PnzU1q+LZqdi9np9w3TLvH48lzavUXPldOZarOGMvcTewqnAD2A2Xa4JrJqRgVQ2SnzRV1TAd4a0+ew+/FuPkV7en8Lmd5qITT4zgsEpFzCTI+3YuAsvE5v0ezzkuB1VieF/aKJvOsonebG0fxdW/MLtQp7D84ezNMM8rAfa4XIiylblR17umOdz8qeNPvEbguPTw4Vm2KPCK95DW1LTenlPud2H327qcmPa9ge1wIIuCDcFa2dr7bhT9oNq/PheJQZMzNWmTD57MoqmY3MD+jCT+E8h6HssnifBLIMN03TxkMy33HwtRh7GD4sRstPanIO+VawEcKNlg0gtuCFlcKZKjp7I2SQiI6p3CSYtbmiI2RskbIREb9k+I9kXTRFiSSeiN+yZPRAKIlv2Ua626jf2eaY1FbSPYMWqz9moGnf4zzfbqGjf3spKc4AXsqH6/wCd3Zx1cq4qeXjw7CiaKmaD8JIP7R/zcCL+gC0uFaP+Jz7Wv7jc3ew8yuDiKpdhlCW952QUUVE81TUSVFTK+WWRxe97zcucTcknqSuyy1ljGc35opcv4FRmorql1mt5NY3q9x6NHMldYR8JLiAAN1drw46Zx5SyBFmTEacfprGI2zOLx8UEB3ZGPS/3j3PZVzEdbZSJQxGj6jk0cP8AgCnVFpzqlMdAnIZkrvtLtE8qadYRHI2mixHG3NH2jEqhgc6/VsYP3G+256kqSZKOmmhMU0MckZFix7AQR7LkckA2UGmZyPNRDGjuJcVWoEpBgMEOG0ABQJqn4bct5no58VyhBDguMgF3lsHDT1B9HN/Ce4+ipti+D4ngON1OD4vRy0lbTP8ALlhlFi0/8+/VbQiLqDfEFo4zPGX35lwGnaMw0Md+Fo3q4huWH1cOh+S2+FMWxZaKJWcdeGdCeB+Fl6/h5kVhmJZtnDUb/wAqlFHW1WH10VbRzyQVMDxJFNG7hdG4bgg+qkjN2q+Y9SqfDosdkja2giDfJhuGSSfilI/eP5b2UYva9kjmPaWuaSCHCxBHQjosoJpIJRJHzHT1VZfJwI0Rkw9oLm6Ha6nb4sYQnQGuIB1HgpHyXk7Fs8ZtgwDB2DzH/HLO4Esp4xze7/gdSrwZHyLgWQ8sx4RgsPOzp6h+8lQ+27nn+Q5DovG+H7LmX8J0jocWwioirKnFGCerq28+Pl5XYM3FvW56qWhsFGcX4hi1GZdLsuIbDa25HE+yo+FqDDkYDZh+cR2d9hsFjZYyRRyscyRjXNcLOa4XBHoV9Lovssatcqma8aPMy3PJnDLdNw4VM/8AvVNGNqZ5/E3+An6FQQCQbgkEcrLY7ieHUmLYRUYZXwtmpamN0UsbuTmkWIVBM95UqMlZ/wASy5PdzaeUmF5/HE7djvoQrJgavunYRkpk3c0ZHdvPw9FJsY0QScUTkAWa7Xkf5VqdA9Rn5xyScJxObjxfC2tjkc7nNFybJ3O1j3Uvb26Kg2l+cJclamYbjHmOFKXiCraOToXmzr+2x+SvvG5rmcTSC07gg3usPjGjinT14Y+h+Y5bhbHCdVM/J9F/fZkfYrLfsjfsndF1k1qEt+yYcQOiXVZIiRJJ6Jb9lldK6IkncJIREHmhCOiIvK6k5kblLSzG8e4uGSnpneURz8x3wt/Mj6LXRIXPJe9xc47ucepPM/VXF8VmMupNK8NwhjhfEK8cX/bG0u/nZU85kgqx/wCPpMQpF8wdXn9hl63UuxnMl842DwaP3K9dpVk/9eNWcIwGSMupDJ59X6eSzd1/fZvzWw2CMQxtjYwMY0ANaOQA5BVe8JGX2vqMw5nlYeJojoYXEbWPxv8A/VWltZZHHc+ZmomAO7DFvM5krS4QkxBkuuIzeb+Q0TPNJCFilrELxupWeqLIGRqrGpy19Uf2VHAT/iykbD2HM9gvXyvEcRe5wAaLkk7AepVIdadQTnzUKV1HO52EUF6ejaDs7f4pLfxHl2AWiwxRTVpwMcPy25uPt5rP4jrApsoXN77sm/PkonzA+orsWqMWqHCSapldLK4CwLnG5Num5XTi7Tde8y5luszhmmiy1h7Lz1soj4rXEbebnnsACV0eccp4lkjO1flrFWD7RSyWDxylYd2vHYgq7CZgNjCUDh0rXty0UngNixIRjuGV7X56qXvDLqgctZuOTsXqS3C8Vk/YOkPwwVB5ewfy91dIOubd1q1jfJHI2SNzmOa4Oa5psWnoR/NX20G1I/tC03idWvBxjDuGmrRfd5A+GS38QH1BUwx7Q+reKjBGTsnePA+eniqBhOq9JvY4pzHd+FKvVCEKbLcIVavFRlyMMwPNMMVpC51DM4DmLcbLn5OHzVlVGOvmC/pjQvFuFhdJRllYztwO3P8AtJXbw3OGTqUGLewvY+ByXFxDK9qp8WHa5tceIzVJLbWBIvsr4aQZk/WfRvBcQkk46hkP2afe544zwm/ewB+aoebgq03hYxV0uTcawh77/ZqtszG+ge3f82qn/wCQZQRacI9s2OH2OXwp1gabMOfMHg8fuFYNCQTUUCr6EwdkkL1EzzSQhEQndJCIhB5ISKJa6qr4uqpzsbyvQg7Mhnlt7lo/4VawL7epVh/FqHfr5gBP3fsL7f71Xgc/mr5g5oFHg22PqVGcSuLqlFvuPQK6/hew9tHoVFVAWNZWzTE+tiGf+qmk81E/hwc13h4wRrSLtfO0+/muKldRqvvL6lMOd+p3qqnRQBIQbfpCEIXnc75qoMmZHrswYg5pbAw+XGTYyyEfCwdyVy4UN8V7YbBck2A8V0IsRsJhiPNgMyop8RWpP6DwD9TMInLcQxCPiqpIz8UMB6e7jt7AqpxtcrssexzEcyZirMcxWYy1lVIXyHoPQAdABYAdl3mm2R6jP2f6TA4w9tKD51ZMz/KhHP5nkPdXyj0+Dh+nExTmB0nHn/cgojVZ6NXJ8CHoTZo5f3VTl4aNP30WFT58xGC09Y009CHD7sN/ifY/vEC3YLneJfTMZnyWM2YTTcWLYSwukawfFNT/AIh3LfvD5qc6CipcOwyCho4Gw08DBHFG0WDGgWAC+skbJYzHI0OY4EFp5EHaxUei4hmHVP8AE2nO+Q/87fZVWDQ4LKeJEjK2vPf7/stWw5bcivf6P6h1GnOpVNipe84bUWp6+Jv4oydnW9Wnf6rla26eS6fanVNLBERhVa51VQSAbBhNzH7tJt7WUbj726uLXS9YkrnNkQf3zBUud11PmbaOYVtDo6uCtoYaullZLDMwSRyMNw5pFwQuQqz+F/VAVmHf2eY1U/3imaZMNkefvx/ii928x29lZgbnmoDVqXEpk06WiDTTmOBVepk+yel2x2cdeRQulzdRsxHIWNULwCJ6GaO3uwrulwcZcG5dr3O5CmkJP+gr4oTi2I0jceq+qOAYbgdj6LXH0Hsp/wDCrU8GdsepN/2tHG//AGvP/wClX9pBaFOfhbudVMTteww11/8AyNV8xc0Oo0a+w9QojhkltVggb+xVuEIQvz+rmhO6SERCEIREJ3Hojb+gjb+giJIIuntbn+SXz/JEVXvFzhr+LK+MNb8A8+mcbdTwuA/IqsQG9/TdXt1+yjLmzRquZRxeZW0DhXQNA3PB94D3aT9FRO3p1VuwFNtj00Qr5sJB8Dn7qS4wlTBnjE4OAP2yVuvClmGKq0+xLLb5R9poKoztYTv5cgvcD04gfqrBg3WujI2dcbyFm2LHsFkaJWt8uSGTdk0Z5sd2/krK0Pityq/Cw+uy/i0NXw7xRcD2X7OJG3yWUxVhSddPOmJRhe1+eWoPFaLDuI5Vso2BMv6Lm5eI4KeK6tpcOoZq2uqI6emhaXySyGzWtHMkqlWseqc2oeaRDQudHgdE5zaSM7eaeRlcPU9B0HulqdrXjuozBh0UX6LwVruIUjH8TpiORkd1t6DZRmNzcndaDCOETIntc4PzOA/Tz8fRZ/E+JxODsssfy+J35eCzaC5wDQSTsAN7q62hunrskaesmxGnazGMStUVVx8UY/BH8gd+5Kh3w96Wvx7GY87Y3TXwujfeiieNqiUH79urW/mfZW1aBb/4uLjyviM/8Olz9Lc3eO3lx5rq4LoZht7dGGZyb4boFgLI6J7f0EvmfopsqGo+1h06g1H04qcLaGNxGn/b0MpH3ZQPu+zhsVr8rKSpoMQnoayB8FTC8xSxPFixwNiCtonMf/FVfxOaUvM51GwCju0N4cViiG/o2aw+jvkfVUDA9fErG7DHd9DtOR/lYzFdI69na4Q+puvMfwq14Li9fgGYKLGcLqDBWUczZoZB+FwP8jyIWwHSzUnCtSMlw4nSvbFXRAR1tHe7oZLb/wCk8wVrxIFzbcL0GT855gyNmSLHMvVxp6hvwyMdvHM2+7Ht6j+XRbnFGHG1eDdmUVuh35H22WUoVadTYtnZsdqPdbKV47VPH4Mt6Q4/iU0gYRSPijv1e8cLR9Sogwjxb5ekwpjsby3iUFcG/GykLZI3O7EkED3US6sa2Ylqb5OHw0X6Nwank81lOX8b5X2sHPPLbewHqpxSsH1GJOMbHh9FgIJOWg23WzqeJpNsq4wX3cRYDx3UcNcfVWK8KOHySZlzFipafLip4qcO6cTnFxH0AVb438Tgrr+HHK82A6Nw11XF5dRisxrCCLHyyAI7/IX+aoOOp1svSnQ+LyAPvc+iw+EJQxak19sm3PspgQgWAT2/oKGKxhJO4R15/kjb+giJFCe39BG39BESQnZFkRJCZGyAERYSAOjLXAEHYg9VTjXHRetytjFRmjLtK+XAah5kljjbxGjcee37h6HorlWXzlijmidHIwPY4EOa4XBB6ELsUStzFImOug5g5Ebhcqr0mFUoPVxMiNDstZQAAuRfus23Cuzmzw6ae5kqJKulp6jBamQ8Tn4e4BhPdhBb9LLw3/SVSipJGdKkQ35fY28X14lWJbHtLisvFJYdiL+imsxg6oMdZgDhvdVh3G52HdS1pJo1iufsThxPE4ZaPLkbw6SdwLXVVjuyMeh5F3IdFPGVPDjkDL1Syrr4qnHKhhDmmvI8tpHURtsD87qXoIIoYWxQsbHG0BrWMFgAOgAXArmP2vhug04HP/Y+w+V2aPgpzXiLPHT/AFHuV8KDD6PDcMp6Cgp2U9NBGI4ooxZrGgbABcpMDeyLKXklxudVRWtDQABkkhOyS8XqF8qiCGpppIJ4myRSNLHscLhwOxBHovqE7IvCL5FUz1p8P1dlipqczZNpH1WCOJkmo4wXPpPXhH4mfmPZQERYcXRbR3Ma4FpAt7KLs4aAab5wqn1tRhLsNrpL8VThzvKLj6ub90/RUmg48MCGIE+C4DRw18x7jNYerYR615iyhtyPsqEi973X1jBI6q1c3hAwn7R/ds51zIejZKVj3fUEfyXqMteFzT/BatlVistfjj2WIjq3BkN+7GgX9iVp42PKUxhcwlx2A+VwGYSqD3WcABvdV+0f0mxPUfMMU09PLT5egkBq6wiwlsf8KP1J5E8gFeymgipqOOnhjbHFG0MYxosGtGwA9gsKGgo8Ooo6OgpoqWniHCyKFgY1o9AByXJDe5Kllfr8asRxEeLNHdG38lb6i0aHTIRY03cdT/eCSE7IsuEu0khHVOyIkhOyLIiW/ZG/ZZWHoEWHoERY79kb9kyBbkgAW5IiW/ZG/ZZWHoEWHoERY7oseyysPQLGwvyREb9kb9llYegSAHoiJb9kb9kwBfknYegRFjv2Rv2TsLckkRG/ZG/ZAAvyWVh6BEWO/ZG6dhbkgAW5IiW6N0wB6IIFuSIlv2Rv2TAFuSdh6BEWO/ZG/ZZWHoEWHoERY79kb9kWF+SysPQIix37I37LKw9Aiw9AiL//2Q==" alt="Meta"></span></div>
-        <div class="mh-loc">Singapore</div>
-        <div class="mh-desc">Led ML &amp; SWE hiring for Reality Labs and Enterprise Engineering.</div>
+        <div class="mh-loc">Bangalore</div>
+        <div class="mh-desc">Built the founding team for Meta's new hub, across Reality Labs and Enterprise Engineering.</div>
       </div>
       <div class="mh reveal">
-        <div class="mh-year">2022</div>
+        <div class="mh-year">2023</div>
         <div class="mh-node"><span class="mh-logo"><img src="data:image/jpeg;base64,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" alt="Walmart"></span></div>
-        <div class="mh-loc">APAC</div>
-        <div class="mh-desc">Built the first Gen AI team of 40 from scratch.</div>
+        <div class="mh-loc">Bangalore</div>
+        <div class="mh-desc">Hired a Gen AI team of 40 engineers in 7 months.</div>
       </div>
       <div class="mh reveal">
         <div class="mh-year">2020</div>
         <div class="mh-node"><span class="mh-logo"><img src="data:image/jpeg;base64,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" alt="ConnectWise"></span></div>
         <div class="mh-loc">India</div>
-        <div class="mh-desc">120 technical hires across Platform and RMM.</div>
+        <div class="mh-desc">120 technical hires across Platform and Security.</div>
       </div>
       <div class="mh reveal">
         <div class="mh-year">2016</div>
@@ -735,8 +789,11 @@
     </div>
   </div>
 </section>
+</div>
 
-<section id="ai">
+<div class="sheet" id="sheet-ai" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Ask my AI">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="ai">
   <div class="wrap">
     <div class="eyebrow reveal">ask my ai</div>
     <h2 class="reveal d1">Don't read the portfolio. Interview it.</h2>
@@ -756,8 +813,11 @@
     <p class="ai-note">// answers from Rupali’s portfolio and résumé. ask anything, anything beyond it points you to a quick call</p>
   </div>
 </section>
+</div>
 
-<section id="building">
+<div class="sheet" id="sheet-building" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Currently building">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="building">
   <div class="wrap">
     <div class="focus reveal">
       <div class="proj-top">
@@ -793,8 +853,11 @@
     </div>
   </div>
 </section>
+</div>
 
-<section id="cases">
+<div class="sheet" id="sheet-cases" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Case studies">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="cases">
   <div class="wrap">
     <div class="eyebrow reveal">case_studies</div>
     <h2 class="reveal d1">Selected work</h2>
@@ -802,29 +865,32 @@
       <div class="case reveal d1">
         <div class="kicker">// 0 → 1 team build</div>
         <h3>Building a Gen AI function from scratch</h3>
-        <p>The obvious move was to post the roles and wait. I bet the people Walmart needed weren't applying anywhere, so instead of a job board I went hunting, passive specialists in LLMs, RAG, and MLOps, found through X-ray sourcing on GitHub, Kaggle, and Stack Overflow, and sold on a mission before there was a team to join.</p>
-        <div class="result"><span>the call →</span> Build the pipeline myself rather than wait for one. The function didn't exist in spring; by autumn it was a full team.</div>
-        <div class="outcome"><span>outcome →</span> A full Gen AI function, productive within the year.</div>
+        <p>The obvious move was to post the roles and wait. I bet the people Walmart needed weren't applying anywhere, so instead of a job board I went hunting, passive specialists in LLMs, RAG, and MLOps, found through their public work on GitHub, Stack Overflow, Hugging Face, and PyTorch forums, and sold on a mission before there was a team to join.</p>
+        <div class="result"><span>the call →</span> Build the pipeline myself rather than wait for one.</div>
+        <div class="outcome"><span>outcome →</span> 40 Gen AI engineers hired in 7 months.</div>
       </div>
       <div class="case reveal d2">
         <div class="kicker">// ai/ml at scale</div>
         <h3>Standing up ML and SWE teams at Meta</h3>
         <p>Across Reality Labs and Enterprise Engineering, the temptation was to close fast on anyone who cleared the bar. I held out for conviction instead. In AI you're assembling a mission, not filling seats, so every hire had to believe in what they were building, not just the offer, slower upfront, far stickier a year on.</p>
-        <div class="result"><span>the call →</span> Optimize for belief over speed, across Singapore, India, and London.</div>
-        <div class="outcome"><span>outcome →</span> Teams that stuck, low early attrition where it usually runs high.</div>
+        <div class="result"><span>the call →</span> Optimize for belief over speed while building the founding team for Meta's new Bangalore hub, hiring across Singapore, India, and London.</div>
+        <div class="outcome"><span>outcome →</span> 15 AI/ML and software roles closed in two quarters, supporting Llama 4.</div>
       </div>
       <div class="case reveal d1">
         <div class="kicker">// inclusive hiring</div>
-        <h3>Moving the number, and how the org hires</h3>
-        <p>Five data modeling roles had sat open two quarters, and the easy story was "no diverse talent out there." I didn't buy it, the funnel was the problem, not the market. I rewrote the descriptions, partnered with ERGs, and pulled bias out of the screen, then made it the way the org hired, not a one-off fix.</p>
+        <h3>A first for Walmart's India Development Center</h3>
+        <p>Inclusive hiring is easy to promise and hard to prove. Walmart's India Development Center had never hired an openly LGBTQ+ employee, and the easy story was that the talent wasn't out there. I didn't buy it, the process was the problem, not the market. I made the hire, then trained the recruiting team on inclusive hiring so it wouldn't stay a one-off.</p>
         <div class="result"><span>the call →</span> Treat it as a process problem, not a pipeline excuse, and bake the fix in for good.</div>
-        <div class="outcome"><span>outcome →</span> Five long-open roles filled, and a hiring playbook the org kept using.</div>
+        <div class="outcome"><span>outcome →</span> Walmart IDC's first openly LGBTQ+ hire, and a team trained to keep hiring inclusively.</div>
       </div>
     </div>
   </div>
 </section>
+</div>
 
-<section id="stack">
+<div class="sheet" id="sheet-stack" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Stack">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="stack">
   <div class="wrap">
     <div class="eyebrow reveal">what i've hired for</div>
     <h2 class="reveal d1">Hiring across the stack</h2>
@@ -851,7 +917,7 @@
         <h4>Infrastructure &amp; Security</h4>
         <div class="chips">
           <span class="chip">Cybersecurity</span><span class="chip">Infrastructure</span><span class="chip">Storage</span>
-          <span class="chip">Platform / RMM</span>
+          <span class="chip">Platform</span>
         </div>
       </div>
       <div class="stack-group reveal d2">
@@ -872,8 +938,11 @@
     <p class="stack-note reveal d2">// across levels, from <b>IC through Principal</b>, Engineering Managers, and up to Director. And I know the difference, an ML engineer from an MLOps engineer, applied from research, so I screen for substance, not keywords.</p>
   </div>
 </section>
+</div>
 
-<section id="toolkit">
+<div class="sheet" id="sheet-toolkit" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Toolkit">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="toolkit">
   <div class="wrap">
     <div class="eyebrow reveal">toolkit &amp; approach</div>
     <h2 class="reveal d1">How I work</h2>
@@ -884,22 +953,22 @@
           <li>Workday · Greenhouse · iCIMS</li>
           <li>LinkedIn Recruiter</li>
           <li>Boolean, X-ray &amp; natural language search</li>
-          <li>GitHub · Stack Overflow · Kaggle</li>
+          <li>GitHub · Stack Overflow · Hugging Face</li>
         </ul>
       </div>
       <div class="tool reveal d2">
         <h4><span class="ic">✦</span>AI &amp; automation</h4>
         <ul>
-          <li>Eightfold AI · Findem · HireEZ</li>
-          <li>Talent intelligence &amp; skills-first matching</li>
-          <li>Seismic · Notion AI</li>
+          <li>Claude · Cursor · Codex</li>
+          <li>Built this portfolio &amp; an AI sourcing agent</li>
+          <li>AI hiring-tool testing (UAT)</li>
           <li>Make.com · Power Automate</li>
         </ul>
       </div>
       <div class="tool reveal d3">
         <h4><span class="ic">❖</span>Analytics &amp; partnership</h4>
         <ul>
-          <li>Tableau · Jamovi</li>
+          <li>Tableau · Advanced Excel</li>
           <li>Workforce &amp; pipeline analytics</li>
           <li>Comp benchmarking &amp; market intel</li>
           <li>Structured intake + scorecards</li>
@@ -909,6 +978,7 @@
     </div>
   </div>
 </section>
+</div>
 
 <section id="quotes" style="display:none">
   <div class="wrap">
@@ -929,7 +999,9 @@
   </div>
 </section>
 
-<section id="writing">
+<div class="sheet" id="sheet-writing" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Writing">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="writing">
   <div class="wrap">
     <div class="eyebrow reveal">writing</div>
     <h2 class="reveal d1">Notes on talent &amp; AI</h2>
@@ -943,24 +1015,30 @@
     </div>
   </div>
 </section>
+</div>
 
-<section id="contact" class="contact">
+<div class="sheet" id="sheet-contact" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Get in touch">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="contact" class="contact">
   <div class="wrap">
     <div class="eyebrow reveal">get in touch</div>
     <h2 class="reveal d1">Building a team, or just want to talk talent?</h2>
-    <p class="lede reveal d2">I'm open to recruiting, human capital consulting, and people analytics roles, and always happy to trade notes with people hiring in AI and tech. The fastest way to reach me is to grab a slot below.</p>
+    <p class="lede reveal d2">I'm open to full time recruiting roles at tech and AI companies from May 2027, and always happy to trade notes with people hiring in AI and tech. The fastest way to reach me is to grab a slot below.</p>
     <div class="hero-row reveal d3" style="justify-content:center">
       <a href="https://calendly.com/rp4571-nyu/30min" target="_blank" rel="noopener" class="btn btn-primary">Book a 30 min call <span class="arr">→</span></a>
       <a href="mailto:rp4571@nyu.edu" class="btn btn-ghost">Email me</a>
     </div>
     <div class="socials reveal d3">
-      <a href="https://www.linkedin.com/in/rupali-patwa-128b8198/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://www.linkedin.com/in/rupali-p-128b8198/" target="_blank" rel="noopener">LinkedIn</a>
       <a href="resume.pdf" id="resumeBtn2" target="_blank" rel="noopener">Résumé</a>
     </div>
   </div>
 </section>
+</div>
 
-<section id="find">
+<div class="sheet" id="sheet-find" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Where to find me">
+  <div class="sheet-top"><button type="button" class="sheet-close" data-close>← Back</button></div>
+  <section id="find">
   <div class="wrap">
     <div class="eyebrow reveal">off the clock</div>
     <h2 class="reveal d1">Where to find me</h2>
@@ -1005,9 +1083,10 @@
     </div>
   </div>
 </section>
+</div>
 
 <footer>
-  <div class="wrap">designed with care · <span class="bn-first" style="font-size:16px">Rupali</span> <span class="bn-last" style="font-size:21px">Patwa</span> · © <span id="yr"></span></div>
+  <div class="wrap"><a href="mailto:rp4571@nyu.edu">Email</a> · <a href="https://www.linkedin.com/in/rupali-p-128b8198/" target="_blank" rel="noopener">LinkedIn</a> · <a href="#contact" data-open="contact">get in touch</a><br>designed with care · <span class="bn-first" style="font-size:16px">Rupali</span> <span class="bn-last" style="font-size:21px">Patwa</span> · © <span id="yr"></span></div>
 </footer>
 
 <div class="article-overlay" id="article" aria-hidden="true">
@@ -1067,7 +1146,7 @@
       trigger.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
     }
     document.getElementById('articleClose').addEventListener('click',close);
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))close();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open')){e.stopImmediatePropagation();close();}});
     overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
 
     /* ---- SHARE LINKS ---- */
@@ -1115,6 +1194,100 @@
   document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el));
 
 </script>
+
+<script>
+  /* topic sheets — header topics rise as their own pages */
+  (function(){
+    const nav=document.getElementById('nav');
+    function fitNav(){
+      document.documentElement.style.setProperty('--nav-h', nav.offsetHeight+'px');
+    }
+    fitNav();
+    addEventListener('resize', fitNav);
+    const home=document.getElementById('home');
+    const foot=document.querySelector('footer');
+    function setHomeHidden(hidden){
+      [home, foot].forEach(el=>{
+        if(!el) return;
+        el.toggleAttribute('inert', hidden);
+        if(hidden) el.setAttribute('aria-hidden','true');
+        else el.removeAttribute('aria-hidden');
+      });
+    }
+    function closeSheets(push){
+      document.querySelectorAll('.sheet.open, .sheet.leaving').forEach(s=>{
+        s.classList.remove('open','leaving');
+        s.setAttribute('aria-hidden','true');
+      });
+      document.body.classList.remove('sheet-lock');
+      setHomeHidden(false);
+      if(window.scrollY<=40) nav.classList.remove('stuck');
+      document.querySelectorAll('[data-open]').forEach(a=>a.classList.remove('active'));
+      if(push && location.hash) history.pushState({sheet:null}, '', location.pathname+location.search);
+    }
+    function openSheet(id, push){
+      const next=document.getElementById('sheet-'+id);
+      if(!next) return;
+      if(next.classList.contains('open') && !next.classList.contains('leaving')){
+        closeSheets(true);
+        return;
+      }
+      const article=document.getElementById('article');
+      if(article && article.classList.contains('open')){
+        article.classList.remove('open');
+        article.setAttribute('aria-hidden','true');
+        document.body.style.overflow='';
+      }
+      document.querySelectorAll('.sheet.open').forEach(s=>{
+        if(s!==next){ s.classList.add('leaving'); s.style.zIndex='70'; }
+      });
+      next.classList.remove('leaving');
+      next.style.zIndex='80';
+      next.classList.add('open');
+      next.setAttribute('aria-hidden','false');
+      next.scrollTop=0;
+      document.body.classList.add('sheet-lock');
+      setHomeHidden(true);
+      nav.classList.add('stuck');
+      document.querySelectorAll('[data-open]').forEach(a=>{
+        a.classList.toggle('active', a.getAttribute('data-open')===id);
+      });
+      next.querySelectorAll('.reveal, .split').forEach(el=>el.classList.add('in'));
+      if(push && location.hash!=='#'+id) history.pushState({sheet:id}, '', '#'+id);
+      setTimeout(()=>{
+        document.querySelectorAll('.sheet.leaving').forEach(s=>{
+          s.classList.remove('open','leaving');
+          s.setAttribute('aria-hidden','true');
+        });
+      }, 660);
+    }
+    document.addEventListener('click',e=>{
+      const opener=e.target.closest('[data-open]');
+      if(opener){ e.preventDefault(); openSheet(opener.getAttribute('data-open'), true); return; }
+      if(e.target.closest('[data-close]')){ e.preventDefault(); closeSheets(true); return; }
+      if(e.target.closest('#brandHome')){
+        e.preventDefault();
+        closeSheets(!!location.hash);
+        window.scrollTo({top:0,behavior:'smooth'});
+        return;
+      }
+    });
+    document.addEventListener('keydown',e=>{
+      if(e.key!=='Escape') return;
+      const article=document.getElementById('article');
+      if(article && article.classList.contains('open')) return;
+      if(document.querySelector('.sheet.open')) closeSheets(true);
+    });
+    window.addEventListener('popstate',()=>{
+      const id=(location.hash||'').replace('#','');
+      if(id && document.getElementById('sheet-'+id)) openSheet(id, false);
+      else closeSheets(false);
+    });
+    const start=(location.hash||'').replace('#','');
+    if(start && document.getElementById('sheet-'+start)) openSheet(start, false);
+  })();
+</script>
+
 <script>
   /* ---- portfolio AI console (self-contained, no backend) ---- */
   (function(){
@@ -1129,35 +1302,35 @@
       {k:["who","about","herself","rupali","profile","summary","background","introduce","bio","what does she do","what do you do","overview"],
        a:"Rupali is a <b>senior talent partner</b> with nine years building AI and engineering teams, from 0 to 1 at startups to hypergrowth at Meta and Walmart. She pairs recruiting with workforce analytics and a master's in Human Capital Analytics at NYU."},
       {k:["experience","career","companies","worked","history","journey","employers","where has she"],
-       a:"She's built teams at <b>Meta</b> (Reality Labs, Enterprise Engineering), <b>Walmart</b> (first Gen AI team), <b>ConnectWise</b> (Platform and RMM), and <b>Aptask</b> (Apple and Google accounts), across the US, India, Singapore, and London."},
-      {k:["meta","reality labs","enterprise engineering","singapore"],
-       a:"At <b>Meta</b> she led hiring for Reality Labs and Enterprise Engineering across Singapore, India, and London, 15+ AI/ML and SWE hires for Gen AI. She held out for mission-fit over speed and helped move the team onto an AI hiring tool."},
-      {k:["walmart","gen ai team","workday","bangalore","apac","first team","forty"],
-       a:"At <b>Walmart</b> she built the first Gen AI team of 40 from scratch in seven months, ran the Workday rollout that cut time to hire 45%, and lifted diversity 30%."},
-      {k:["connectwise","platform","rmm","hundred twenty","hackathon"],
-       a:"At <b>ConnectWise</b> she closed 120 technical hires across the Platform and RMM engineering teams, and grew employer brand through hackathons and code contests."},
+       a:"She's built teams at <b>Meta</b> (Reality Labs, Enterprise Engineering), <b>Walmart</b> (Gen AI, Sam's Club, and CX), <b>ConnectWise</b> (Platform and Security), and <b>Aptask</b> (Apple and Google accounts), across the US, India, Singapore, and London."},
+      {k:["meta","reality labs","enterprise engineering","singapore","llama"],
+       a:"At <b>Meta</b> she led hiring for Reality Labs and Enterprise Engineering across Singapore, India, and London, building the founding team for Meta's new Bangalore hub. She closed 15 AI/ML and software roles supporting Llama 4 in two quarters, partnered with Directors and VPs on IC5 to M2 hiring, and helped test an AI-powered hiring tool."},
+      {k:["walmart","gen ai team","sparky","sam's club","scan & go","bangalore","apac","first team","forty"],
+       a:"At <b>Walmart</b> she hired a Gen AI team of 40 engineers in seven months, the team behind the Sparky shopping assistant, autonomous inventory movement, and Sam's Club Scan & Go. She also closed 240+ hires from SDE III to L7 across Sam's Club and CX, and led four coordinators on executive hiring."},
+      {k:["connectwise","platform","security","hundred twenty","hackathon"],
+       a:"At <b>ConnectWise</b> she closed 120 hires for the Platform and Security team under COVID remote-work constraints, introducing a remote hiring framework. Her hackathons and coding contests lifted candidate satisfaction 25% and applications 22%."},
       {k:["aptask","apple","google","java","python","cloud","first job","earliest"],
-       a:"At <b>Aptask</b> she ran engineering recruiting across Java, Python, and cloud stacks for the Apple and Google accounts, beating annual placement targets."},
+       a:"At <b>Aptask</b> she closed technical hires across software, ML, and data science for the Apple and Google accounts, and cut offer declines by 30%."},
       {k:["hr nexus","nexus","building","product","project","startup","app","orchestration","frontline","what is she building","what are you building"],
        a:"She's building <b>HR Nexus</b>, an AI HR orchestration layer for frontline shared services in heavy industry, oil and gas, defense, and food manufacturing. What's live: a cross-role workspace that interprets a request, checks policy and evidence, and auto-resolves or routes it, carrying the same case from worker to supervisor to HR ops with every decision logged for audit."},
       {k:["hire","stack","positions","recruit","skills","domains","functions","technical","what can she","what roles","seniority","levels"],
        a:"Across <b>SWE, AI/ML, product, and SaaS</b>, from ICs to Principals, EMs, and Directors. In AI: generative AI, LLMs, RAG, agentic AI, MLOps, applied AI and research, NLP, computer vision, data and AI infrastructure. In SWE: full stack, frontend, backend, mobile, QA, DevOps, SRE, cloud. Plus product and program roles. She knows the difference between an ML and an MLOps engineer and screens for substance."},
       {k:["machine learning","llm","rag","mlops","generative","gen ai","artificial intelligence","ai ml","ai/ml"],
-       a:"AI/ML hiring is her core, LLMs, RAG, MLOps, data and ML engineering. She built Walmart's Gen AI team and Meta's ML hires, sourcing passive specialists through X-ray search on GitHub, Kaggle, and Stack Overflow."},
-      {k:["sourcing","boolean","x-ray","xray","github","kaggle","stack overflow","passive","headhunt","find candidates","source"],
-       a:"She specializes in <b>Boolean and unconventional X-ray sourcing</b>, finding passive specialists on GitHub, Kaggle, and Stack Overflow rather than posting roles and waiting."},
-      {k:["diversity","inclusion","dei","erg","bias","inclusive","representation"],
-       a:"She lifted diversity 30% at Walmart by treating it as a funnel problem, not a pipeline excuse, rewriting descriptions, partnering with ERGs, and pulling bias out of the screen, then making it the standard way the org hired."},
-      {k:["analytics","nyu","master","masters","degree","education","study","human capital","stem","gpa","university","school"],
-       a:"She's finishing a <b>Master's in Human Capital Analytics & Technology (STEM) at NYU</b> with a 4.0, pairing that data lens with years of frontline recruiting."},
+       a:"AI/ML hiring is her core, LLMs, RAG, MLOps, data and ML engineering. She built Walmart's Gen AI team and Meta's ML hires, sourcing passive specialists on GitHub, Stack Overflow, Hugging Face, and PyTorch forums."},
+      {k:["sourcing","boolean","x-ray","xray","github","hugging face","pytorch","stack overflow","passive","headhunt","find candidates","source"],
+       a:"She specializes in <b>Boolean and unconventional X-ray sourcing</b>, finding passive specialists on GitHub, Stack Overflow, Hugging Face, and PyTorch forums rather than posting roles and waiting."},
+      {k:["diversity","inclusion","dei","erg","bias","inclusive","representation","lgbtq"],
+       a:"At Walmart she hired the India Development Center's first openly LGBTQ+ employee, then trained the recruiting team on inclusive hiring so it became the way the org hired, not a one-off."},
+      {k:["analytics","nyu","master","masters","degree","education","study","human capital","stem","gpa","university","school","shrm","president"],
+       a:"She's finishing a <b>Master's in Human Capital Analytics & Technology (STEM) at NYU</b> with a 4.0, focused on reporting and analytics, workforce planning, and business strategy. She's also <b>President of NYU SHRM</b>. Before that, a B.Tech in Chemical Engineering from Banasthali University."},
       {k:["available","open","looking","opportunity","opportunities","full time","when can","start","join","hiring her","hire her","can i hire"],
-       a:"She's open to <b>senior recruiting, human capital consulting, and people analytics</b> roles, full time or select consulting, available 2027.", cta:true},
+       a:"She's open to <b>full time recruiting roles</b> at tech and AI companies, starting May 2027.", cta:true},
       {k:["contact","email","reach","calendly","book","schedule","call","get in touch","connect","linkedin","talk"],
        a:"The fastest way is to book a 30 minute call. You can also reach her by email or on LinkedIn, both in the contact section.", cta:true},
       {k:["why","convince","best","stand out","what makes","why hire","why you","why her","strongest"],
        a:"Because she works <b>both ends of the curve</b>, the scrappy 0 to 1 build and hypergrowth at scale. She backs hiring with analytics, obsesses over the hire that still looks right a year later, and she built an AI product and this assistant herself.", special:true},
       {k:["toolkit","tools","ats","process","method","how she works","workflow"],
-       a:"Her toolkit spans sourcing and ATS (Workday, Greenhouse, iCIMS, LinkedIn Recruiter, Boolean and X-ray plus natural language search, GitHub, Stack Overflow, Kaggle), AI sourcing and talent intelligence (Eightfold AI, Findem, HireEZ, skills-first matching), automation (Make.com, Power Automate), and analytics (Tableau, comp benchmarking and market intel, structured intake and scorecards, internal mobility and succession)."},
+       a:"Her toolkit spans sourcing and ATS (Greenhouse, iCIMS, Workday, LinkedIn Recruiter, Boolean and X-ray search, GitHub, Stack Overflow, Hugging Face), AI tools (Claude, Cursor, and Codex, which she used to build this portfolio and an AI sourcing agent), automation (Make.com, Power Automate), and analytics (Tableau, Advanced Excel, structured intake and scorecards)."},
       {k:["writing","blog","essay","article","intake","structured intake","thinking","publish"],
        a:"She writes about hiring. Her featured essay, <b>Why structured intake beats a perfect job description</b>, is on getting alignment before the search, it's in the writing section."},
       {k:["leadership","manage","management","lead team","team lead","coordinators","mentor"],
@@ -1167,7 +1340,7 @@
       {k:["resume","cv","download","pdf"],
        a:"You can download her full résumé from the button in the hero or the contact section."},
       {k:["seasonal","volume","high volume","scale hiring","ramp","capacity"],
-       a:"She's run high-volume technical hiring at scale, 150+ hires up to Director at Walmart and 120 at ConnectWise, with the analytics to keep quality steady under speed."}
+       a:"She's run high-volume technical hiring at scale, 240+ hires from SDE III to L7 at Walmart and 120 at ConnectWise, with the analytics to keep quality steady under speed."}
     ];
     const THANKS=["thank","thanks","thx","cool","awesome","great","nice"];
     const CAL="https://calendly.com/rp4571-nyu/30min";
