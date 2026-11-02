@@ -1474,19 +1474,97 @@
     const CAL="https://calendly.com/rp4571-nyu/30min";
 
     function norm(s){ return ' '+s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()+' '; }
+    function hasTerm(q,k){
+      const nk=' '+k.toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()+' ';
+      return q.includes(nk);
+    }
+    const STORIES=[
+      {id:'walmart', names:['walmart'], scratch:true,
+       line:'At <b>Walmart</b> she built a Gen AI function from scratch and hired 40 engineers in seven months, the team behind Sparky, autonomous inventory movement, and Sam\'s Club Scan & Go.',
+       more:'She also closed 240+ hires from SDE III to L7 across Sam\'s Club and CX, and led four coordinators on executive hiring.'},
+      {id:'meta', names:['meta'], scratch:true,
+       line:'At <b>Meta</b> she stood up the founding team for the new Bangalore hub and closed 15 AI/ML and software roles supporting Llama 4 in two quarters.',
+       more:'She partnered with Directors and VPs on IC5 to M2 hiring across Singapore, India, and London.'},
+      {id:'connectwise', names:['connectwise','connect wise'], scratch:false,
+       line:'At <b>ConnectWise</b> she closed 120 hires for Platform and Security, and her hackathons lifted candidate satisfaction 25% and applications 22%.',
+       more:'She did that under COVID remote-work constraints and introduced a remote hiring framework.'},
+      {id:'aptask', names:['aptask','apptask','app task','apt task'], scratch:false,
+       line:'At <b>Aptask</b> she closed technical hires for the Apple and Google accounts and cut offer declines by 30%.',
+       more:''}
+    ];
+    function askedCount(q){
+      if(/\b(4|four|all)\b/.test(q)) return 4;
+      if(/\b(2|two)\b/.test(q)) return 2;
+      if(/\b(1|one)\b/.test(q) && !/\b(one of|one impact)\b/.test(q)) return 1;
+      return 3;
+    }
+    function namedStories(q){
+      return STORIES.filter(s=>s.names.some(n=>hasTerm(q,n)));
+    }
+    function anyTerm(q,keys){ return keys.some(k=>hasTerm(q,k)); }
+    function storyBlurb(list){ return list.map(s=>s.line+(s.more?' '+s.more:'')).join(' '); }
+    function compose(text){
+      const q=norm(text);
+      if(anyTerm(q,['source','sourcing','boolean','x ray','xray','github','hugging face','playbook'])) return null;
+      if(anyTerm(q,['nexus','orchestration'])) return null;
+      const numbered=/\b(two|three|four|2|3|4)\b/.test(q);
+      const scratch=anyTerm(q,['scratch','from scratch','built up','build up','ground up','stood up','greenfield','zero to one','0 to 1','founding team','from zero','brand new','didn t exist','built a team','built the team','build a team','build the team','new function','new team']);
+      const impact=anyTerm(q,['impact','impacts','impactful','highlight','highlights','achievement','achievements','result','results','brought','proud','signature','contribution','contributions','difference she made','value she'])
+        || (anyTerm(q,['example','examples']) && (numbered || anyTerm(q,['career','work','hiring','impact'])));
+      if(scratch && !(impact && numbered)){
+        let picks=namedStories(q).filter(s=>s.scratch);
+        if(!picks.length) picks=STORIES.filter(s=>s.scratch);
+        const yes=picks.length>1
+          ? "Yes. She has built teams from scratch at both <b>Walmart</b> and <b>Meta</b>. "
+          : "Yes. She has built a team from scratch at <b>"+(picks[0].id==='walmart'?'Walmart':'Meta')+"</b>. ";
+        return {a:yes+picks.map(s=>s.line).join(' ')};
+      }
+      if(anyTerm(q,['diversity','inclusion','dei','lgbtq','lgbt','inclusive','bias','erg','representation']))
+        return {a:"At <b>Walmart</b> she hired the India Development Center's first openly LGBTQ+ employee, then trained the recruiting team on inclusive hiring so it became the way the org hired, not a one-off."};
+      if(anyTerm(q,['leadership','led a team','lead a team','led a','recruiting team','coordinators','people manager','people leader','mentor','managed a team','managed recruiters']))
+        return {a:"Yes. She has led recruiting teams, including <b>four coordinators at Walmart</b> on executive hiring, and she partnered as a business partner to Directors and VPs at <b>Meta</b>."};
+      if(anyTerm(q,['how many','volume','high volume','headcount','at scale','scale hiring','numbers','how much hiring','hires did','many hires','many people'])){
+        let pool=namedStories(q); if(!pool.length) pool=STORIES.slice();
+        return {a:'She has hired at scale. '+storyBlurb(pool)};
+      }
+      if(anyTerm(q,['nyu','master','masters','degree','shrm','gpa','university','school','education','human capital','studied','studying','college']))
+        return {a:"She's finishing a <b>Master's in Human Capital Analytics & Technology (STEM) at NYU</b> with a 4.0, focused on reporting and analytics, workforce planning, and business strategy. She's also <b>President of NYU SHRM</b>. Before that, a B.Tech in Chemical Engineering from Banasthali University."};
+      if(anyTerm(q,['available','availability','open to','looking for','when can she','start date','may 2027','hiring her','can i hire','full time','when can she join']))
+        return {a:"She's open to <b>full time recruiting roles</b> at tech and AI companies, starting May 2027.", cta:true};
+      if(anyTerm(q,['why hire','why her','why you','stand out','what makes','strongest','convince','why should']))
+        return {a:"Because she has turned hiring plans into <b>working teams shipping AI products used by millions</b>, from brand-new functions to hypergrowth. She backs hiring with analytics, cares most about the hire that still looks right a year later, and built an AI product and this assistant herself.", special:true};
+      if(anyTerm(q,['based','location','new york','relocate','remote','global','international','regions','countries','where does she live','which city','where is she']))
+        return {a:"She's based in <b>New York</b> and has hired across the US, India, Singapore, and London."};
+      if(impact){
+        let pool=namedStories(q);
+        if(!pool.length) pool=STORIES.slice();
+        const n=Math.min(askedCount(q), pool.length);
+        const picks=pool.slice(0,n);
+        const ord=['One','Two','Three','Four'];
+        const lead=(n===1?'One impact':(n===2?'Two':n===3?'Three':'Four')+' impacts')+' she brought. ';
+        return {a:lead+picks.map((s,i)=>ord[i]+': '+s.line).join(' ')};
+      }
+      if(anyTerm(q,['career','companies','employers','where has she','work history','where did she work','which companies']))
+        return {a:'She has built teams at Meta, Walmart, ConnectWise, and Aptask. '+storyBlurb(STORIES)};
+      const named=namedStories(q);
+      if(named.length) return {a:storyBlurb(named)};
+      return null;
+    }
     function match(text){
       const t=text.toLowerCase().trim(), q=norm(text);
       if(/^(hi|hey+|hello|yo|howdy|sup|hiya)\b/.test(t))
         return {a:"Hi! I answer from Rupali's portfolio and résumé. Ask about her work, what she can hire for, HR Nexus, or whether she's available."};
-      if(THANKS.some(w=>q.includes(' '+w))) return {a:"Anytime. If you'd like to take it further, you can book a quick call with her.", cta:true};
+      if(THANKS.some(w=>hasTerm(q,w))) return {a:"Anytime. If you'd like to take it further, you can book a quick call with her.", cta:true};
+      const composed=compose(text);
+      if(composed) return composed;
       let best=null,bestScore=0;
       KB.forEach(e=>{ let s=0;
-        e.k.forEach(k=>{ if(q.includes(' '+k+' ')||q.includes(k)) s+= (k.indexOf(' ')>-1?3:(k.length>4?2:1)); });
+        e.k.forEach(k=>{ if(hasTerm(q,k)) s+= (k.indexOf(' ')>-1?3:(k.length>4?2:1)); });
         if(s>0 && e.id && e.id.indexOf('src-')===0) s+=3;
         if(s>bestScore){ bestScore=s; best=e; }
       });
       if(best && bestScore>=1) return best;
-      return {a:"That's a bit beyond what I can answer from Rupali's portfolio and résumé. The best way to get into it is a quick conversation, grab a 20 minute slot and she'll take it from there.", cta:true};
+      return {a:"I don't have further detail on that here. Connect with Rupali and she can take it from there.", cta:true};
     }
     function parseRuns(html){ const runs=[]; const re=/<b>(.*?)<\/b>|([^<]+)/g; let m;
       while((m=re.exec(html))){ if(m[1]!==undefined) runs.push({t:m[1],b:true}); else runs.push({t:m[2],b:false}); } return runs; }
@@ -1527,7 +1605,7 @@
           bub.appendChild(row); screen.scrollTop=screen.scrollHeight; }
       }); }
 
-    const chips=["What's HR Nexus?","What can she hire for?","Her AI/ML experience","How does she source?","Is she available?","Why hire her?"];
+    const chips=["What's HR Nexus?","What can she hire for?","Three impacts she brought","Built a team from scratch?","How does she source?","Is she available?","Why hire her?"];
     chips.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=c;
       b.addEventListener('click',()=>{ field.value=''; ask(c); }); chipWrap.appendChild(b); });
     form.addEventListener('submit',e=>{ e.preventDefault(); const v=field.value.trim(); if(!v) return; field.value=''; ask(v); });
