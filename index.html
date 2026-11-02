@@ -1564,7 +1564,7 @@
         if(s>bestScore){ bestScore=s; best=e; }
       });
       if(best && bestScore>=1) return best;
-      return {a:"I don't have further detail on that here. Connect with Rupali and she can take it from there.", cta:true};
+      return {a:"This part is one <b>Rupali would love to answer herself</b>. I can only speak from her portfolio and résumé, so connect with her and ask her directly.", cta:true};
     }
     function parseRuns(html){ const runs=[]; const re=/<b>(.*?)<\/b>|([^<]+)/g; let m;
       while((m=re.exec(html))){ if(m[1]!==undefined) runs.push({t:m[1],b:true}); else runs.push({t:m[2],b:false}); } return runs; }
