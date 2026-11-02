@@ -1533,6 +1533,8 @@
         return {a:"She's open to <b>full time recruiting roles</b> at tech and AI companies, starting May 2027.", cta:true};
       if(anyTerm(q,['why hire','why her','why you','stand out','what makes','strongest','convince','why should']))
         return {a:"Because she has turned hiring plans into <b>working teams shipping AI products used by millions</b>, from brand-new functions to hypergrowth. She backs hiring with analytics, cares most about the hire that still looks right a year later, and built an AI product and this assistant herself.", special:true};
+      if(anyTerm(q,['preferred location','preferred','job location','where does she want','where would she like','ideal location','location preference','want to work','like to work']))
+        return {a:"Her preferred locations are the <b>Bay Area</b> and <b>Seattle</b>."};
       if(anyTerm(q,['based','location','new york','relocate','remote','global','international','regions','countries','where does she live','which city','where is she']))
         return {a:"She's based in <b>New York</b> and has hired across the US, India, Singapore, and London."};
       if(impact){
