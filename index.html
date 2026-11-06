@@ -494,7 +494,7 @@
   /* AI CONSOLE */
   #ai{scroll-margin-top:var(--nav-h)}
   #ai .wrap{max-width:880px}
-  .ai-console{margin-top:18px;border-radius:20px;overflow:hidden;border:1px solid var(--glass-line);
+  .ai-console{margin-top:18px;border-radius:20px;overflow:clip;border:1px solid var(--glass-line);
     background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:var(--shadow)}
   .ai-bar{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);
     background:rgba(42,33,28,.03)}
@@ -505,8 +505,10 @@
   .ai-bar .ai-badge{margin-left:auto;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;
     text-transform:uppercase;color:var(--accent-deep);background:rgba(107,63,160,.1);border:1px solid rgba(107,63,160,.2);
     padding:4px 9px;border-radius:20px}
-  .ai-screen{padding:24px 22px;min-height:230px;max-height:430px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
-  .ai-msg{display:flex;gap:12px;max-width:88%;animation:msgIn .4s cubic-bezier(.2,.7,.2,1)}
+  .ai-screen{padding:24px 22px;height:min(430px,55dvh);min-height:230px;overflow-x:hidden;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;
+    display:flex;flex-direction:column;gap:16px}
+  .ai-msg{display:flex;gap:12px;max-width:88%;flex-shrink:0;animation:msgIn .4s cubic-bezier(.2,.7,.2,1)}
   @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .ai-msg.user{align-self:flex-end;flex-direction:row-reverse}
   .ai-ava{width:32px;height:32px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;
@@ -1572,19 +1574,24 @@
       while((m=re.exec(html))){ if(m[1]!==undefined) runs.push({t:m[1],b:true}); else runs.push({t:m[2],b:false}); } return runs; }
     function tokenize(html){ const toks=[];
       parseRuns(html).forEach(r=>{ r.t.split(/(\s+)/).forEach(p=>{ if(p!=='') toks.push({t:p,b:r.b}); }); }); return toks; }
+    let followBottom=true;
+    screen.addEventListener('scroll',()=>{
+      followBottom=screen.scrollHeight-screen.scrollTop-screen.clientHeight<48;
+    },{passive:true});
+    function stickScroll(){ if(followBottom) screen.scrollTop=screen.scrollHeight; }
     function msg(role){ const wrap=document.createElement('div'); wrap.className='ai-msg '+role;
       const ava=document.createElement('div'); ava.className='ai-ava'; ava.textContent=role==='bot'?'✦':'›';
       const bub=document.createElement('div'); bub.className='ai-bub';
-      wrap.appendChild(ava); wrap.appendChild(bub); screen.appendChild(wrap); screen.scrollTop=screen.scrollHeight; return bub; }
+      wrap.appendChild(ava); wrap.appendChild(bub); screen.appendChild(wrap); stickScroll(); return bub; }
     function typeReply(bub,html,special,cb){ if(special) bub.classList.add('special');
       const toks=tokenize(html); bub.innerHTML='';
       const cur=document.createElement('span'); cur.className='ai-cursor'; bub.appendChild(cur); let i=0;
       (function tick(){ if(i>=toks.length){ cur.remove(); if(cb) cb(); return; }
         const tk=toks[i++]; let node;
         if(tk.b){ node=document.createElement('b'); node.textContent=tk.t; } else node=document.createTextNode(tk.t);
-        bub.insertBefore(node,cur); screen.scrollTop=screen.scrollHeight;
+        bub.insertBefore(node,cur); stickScroll();
         setTimeout(tick, /\s/.test(tk.t)?22:34); })(); }
-    async function ask(text,forced){ msg('user').textContent=text;
+    async function ask(text,forced){ followBottom=true; msg('user').textContent=text;
       const bub=msg('bot'); bub.innerHTML='<span class="ai-think"><i></i><i></i><i></i></span>';
       let reply=null, cta=false, special=false, hit=forced||null;
       if(!forced) try{
@@ -1599,12 +1606,12 @@
       }
       typeReply(bub,reply,special,function(){
         if(cta){ const a=document.createElement('a'); a.className='ai-cal'; a.href=CAL; a.target='_blank'; a.rel='noopener';
-          a.textContent='Book a 20 min call →'; bub.appendChild(a); screen.scrollTop=screen.scrollHeight; }
+          a.textContent='Book a 20 min call →'; bub.appendChild(a); stickScroll(); }
         if(hit && hit.follow){ const row=document.createElement('div'); row.className='ai-follow';
           hit.follow.filter(f=>f[1]!==hit.id).forEach(f=>{ const e=KB.find(x=>x.id===f[1]); if(!e) return;
             const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=f[0];
             b.addEventListener('click',()=>{ row.remove(); ask('Sourcing '+f[0].toLowerCase(),e); }); row.appendChild(b); });
-          bub.appendChild(row); screen.scrollTop=screen.scrollHeight; }
+          bub.appendChild(row); stickScroll(); }
       }); }
 
     const chips=["What's HR Nexus?","What can she hire for?","Three impacts she brought","Built a team from scratch?","How does she source?","Is she available?","Why hire her?"];
